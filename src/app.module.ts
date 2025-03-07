@@ -30,8 +30,11 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
 
 import { AudiosModule } from './audios/audios.module';
 
+import { TranscriptsModule } from './transcripts/transcripts.module';
+
 @Module({
   imports: [
+    TranscriptsModule,
     AudiosModule,
     ConfigModule.forRoot({
       isGlobal: true,
