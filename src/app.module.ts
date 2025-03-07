@@ -32,8 +32,11 @@ import { AudiosModule } from './audios/audios.module';
 
 import { TranscriptsModule } from './transcripts/transcripts.module';
 
+import { AnalysesModule } from './analyses/analyses.module';
+
 @Module({
   imports: [
+    AnalysesModule,
     TranscriptsModule,
     AudiosModule,
     ConfigModule.forRoot({
