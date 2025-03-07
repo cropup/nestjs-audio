@@ -8,12 +8,16 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AudiosService } from './audios.service';
-import { CreateAudioDto } from './dto/create-audio.dto';
 import { UpdateAudioDto } from './dto/update-audio.dto';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiParam,
@@ -39,11 +43,19 @@ export class AudiosController {
   constructor(private readonly audiosService: AudiosService) {}
 
   @Post()
-  @ApiCreatedResponse({
-    type: Audio,
+  @ApiCreatedResponse({ type: Audio })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
   })
-  create(@Body() createAudioDto: CreateAudioDto) {
-    return this.audiosService.create(createAudioDto);
+  @UseInterceptors(FileInterceptor('file'))
+  create(@UploadedFile() file: Express.Multer.File) {
+    return this.audiosService.create(file);
   }
 
   @Get()

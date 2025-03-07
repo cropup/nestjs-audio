@@ -1,32 +1,8 @@
-import {
-  // decorators here
-  IsString,
-  IsNumber,
-  ValidateNested,
-  IsNotEmptyObject,
-} from 'class-validator';
+import { IsString, IsNumber } from 'class-validator';
 
-import {
-  // decorators here
-  ApiProperty,
-} from '@nestjs/swagger';
-
-import {
-  // decorators here
-  Type,
-} from 'class-transformer';
-import { FileDto } from '../../files/dto/file.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAudioDto {
-  @ApiProperty({
-    required: true,
-    type: () => FileDto,
-  })
-  @ValidateNested()
-  @Type(() => FileDto)
-  @IsNotEmptyObject()
-  file: FileDto;
-
   @ApiProperty({
     required: true,
     type: () => Number,
@@ -47,6 +23,4 @@ export class CreateAudioDto {
   })
   @IsString()
   originalFilename: string;
-
-  // Don't forget to use the class-validator decorators in the DTO properties.
 }

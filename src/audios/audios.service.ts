@@ -1,50 +1,39 @@
 import {
+  HttpStatus,
   // common
   Injectable,
-  HttpStatus,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { CreateAudioDto } from './dto/create-audio.dto';
-import { UpdateAudioDto } from './dto/update-audio.dto';
-import { AudioRepository } from './infrastructure/persistence/audio.repository';
 import { IPaginationOptions } from '../utils/types/pagination-options';
-import { Audio } from './domain/audio';
 import { FilesService } from '../files/files.service';
+import { FilesLocalService } from '../files/infrastructure/uploader/local/files.service';
 import { FileType } from '../files/domain/file';
+import { AudioRepository } from './infrastructure/persistence/audio.repository';
+import { UpdateAudioDto } from './dto/update-audio.dto';
+import { Audio } from './domain/audio';
 
 @Injectable()
 export class AudiosService {
   constructor(
     private readonly filesService: FilesService,
+    private readonly localFilesService: FilesLocalService,
 
     // Dependencies here
     private readonly audioRepository: AudioRepository,
   ) {}
 
-  async create(createAudioDto: CreateAudioDto) {
+  async create(file: Express.Multer.File) {
     // Do not remove comment below.
     // <creating-property />
-    const fileObject = await this.filesService.findById(createAudioDto.file.id);
-    if (!fileObject) {
-      throw new UnprocessableEntityException({
-        status: HttpStatus.UNPROCESSABLE_ENTITY,
-        errors: {
-          file: 'notExists',
-        },
-      });
-    }
-    const file = fileObject;
+    const fileObject = await this.localFilesService.create(file);
 
     return this.audioRepository.create({
       // Do not remove comment below.
       // <creating-property-payload />
-      file,
-
-      size: createAudioDto.size,
-
-      mimeType: createAudioDto.mimeType,
-
-      originalFilename: createAudioDto.originalFilename,
+      file: fileObject.file,
+      size: file.size,
+      mimeType: file.mimetype,
+      originalFilename: file.originalname,
     });
   }
 

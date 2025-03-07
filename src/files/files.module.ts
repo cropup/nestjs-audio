@@ -26,6 +26,10 @@ const infrastructureUploaderModule =
     infrastructureUploaderModule,
   ],
   providers: [FilesService],
-  exports: [FilesService, infrastructurePersistenceModule],
+  exports: [
+    FilesService,
+    infrastructurePersistenceModule,
+    infrastructureUploaderModule,
+  ],
 })
 export class FilesModule {}
