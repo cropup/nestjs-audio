@@ -41,4 +41,9 @@ export class FileRelationalRepository implements FileRepository {
 
     return entities.map((entity) => FileMapper.toDomain(entity));
   }
+
+  async findAll(): Promise<FileType[]> {
+    const entities = await this.fileRepository.find();
+    return entities.map((entity) => FileMapper.toDomain(entity));
+  }
 }

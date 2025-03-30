@@ -14,6 +14,10 @@ export abstract class AnalysisRepository {
     paginationOptions: IPaginationOptions;
   }): Promise<Analysis[]>;
 
+  abstract findAllHours(): Promise<{ hour: string; count: number }[]>;
+
+  abstract findAllByHour(hour: string): Promise<Analysis[]>;
+
   abstract findById(id: Analysis['id']): Promise<NullableType<Analysis>>;
 
   abstract findByIds(ids: Analysis['id'][]): Promise<Analysis[]>;

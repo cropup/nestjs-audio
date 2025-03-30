@@ -12,6 +12,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AudiosService } from './audios.service';
 import { UpdateAudioDto } from './dto/update-audio.dto';
 import {
@@ -31,6 +32,7 @@ import {
 } from '../utils/dto/infinity-pagination-response.dto';
 import { infinityPagination } from '../utils/infinity-pagination';
 import { FindAllAudiosDto } from './dto/find-all-audios.dto';
+import { AudioCreatedEvent } from './events/audio-created.event';
 
 @ApiTags('Audios')
 @ApiBearerAuth()
@@ -40,7 +42,10 @@ import { FindAllAudiosDto } from './dto/find-all-audios.dto';
   version: '1',
 })
 export class AudiosController {
-  constructor(private readonly audiosService: AudiosService) {}
+  constructor(
+    private readonly audiosService: AudiosService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   @Post()
   @ApiCreatedResponse({ type: Audio })
@@ -54,8 +59,18 @@ export class AudiosController {
     },
   })
   @UseInterceptors(FileInterceptor('file'))
-  create(@UploadedFile() file: Express.Multer.File) {
-    return this.audiosService.create(file);
+  async create(@UploadedFile() file: Express.Multer.File) {
+    const uploadedFile = await this.audiosService.create(file);
+    this.eventEmitter.emit(
+      'audio.created',
+      new AudioCreatedEvent({
+        fileId: uploadedFile.file.id,
+        audioId: uploadedFile.id,
+        payload: {},
+      }),
+    );
+
+    return uploadedFile;
   }
 
   @Get()

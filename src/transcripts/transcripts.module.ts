@@ -6,12 +6,14 @@ import {
 import { TranscriptsService } from './transcripts.service';
 import { TranscriptsController } from './transcripts.controller';
 import { RelationalTranscriptPersistenceModule } from './infrastructure/persistence/relational/relational-persistence.module';
+import { FilesModule } from '../files/files.module';
+import { AiModule } from '../ai/ai.module';
 
 @Module({
   imports: [
     AudiosModule,
-
-    // import modules, etc.
+    FilesModule,
+    AiModule,
     RelationalTranscriptPersistenceModule,
   ],
   controllers: [TranscriptsController],

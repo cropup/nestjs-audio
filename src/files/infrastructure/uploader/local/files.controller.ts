@@ -59,4 +59,10 @@ export class FilesLocalController {
   download(@Param('path') path, @Response() response) {
     return response.sendFile(path, { root: './files' });
   }
+
+  @Get('audio/:id')
+  @ApiExcludeEndpoint()
+  getAudioFile(@Param('id') id: string) {
+    return this.filesService.getAudioFileAsBase64(id);
+  }
 }

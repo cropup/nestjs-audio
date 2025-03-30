@@ -70,6 +70,27 @@ export class AnalysesController {
     );
   }
 
+  @Get('hours')
+  // @ApiOkResponse({
+  //   type: [
+  //     {
+  //       hour: String,
+  //       count: Number,
+  //     },
+  //   ],
+  // })
+  findAllHours(): Promise<{ hour: string; count: number }[]> {
+    return this.analysesService.findAllHours();
+  }
+
+  @Get('by-hour')
+  @ApiOkResponse({
+    type: [Analysis],
+  })
+  findAllByHour(@Query('hour') hour: string): Promise<Analysis[]> {
+    return this.analysesService.findAllByHour(hour);
+  }
+
   @Get(':id')
   @ApiParam({
     name: 'id',

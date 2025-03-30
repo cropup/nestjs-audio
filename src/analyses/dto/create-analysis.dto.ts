@@ -2,33 +2,33 @@ import { TranscriptDto } from '../../transcripts/dto/transcript.dto';
 
 import { AudioDto } from '../../audios/dto/audio.dto';
 
-import {
-  // decorators here
-  Type,
-} from 'class-transformer';
+import { Type } from 'class-transformer';
 
 import {
-  // decorators here
-
   ValidateNested,
   IsNotEmptyObject,
   IsOptional,
   IsString,
+  IsArray,
+  ValidateIf,
 } from 'class-validator';
 
-import {
-  // decorators here
-  ApiProperty,
-} from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { AnalysisErrorDto } from './analysis-error.dto';
 
 export class CreateAnalysisDto {
   @ApiProperty({
     required: false,
-    type: () => String,
+    type: () => [AnalysisErrorDto],
+    nullable: true,
   })
   @IsOptional()
-  @IsString()
-  errors?: string | null;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AnalysisErrorDto)
+  @ValidateIf((o) => o.errors !== null)
+  errors?: AnalysisErrorDto[] | null;
 
   @ApiProperty({
     required: false,
@@ -56,6 +56,4 @@ export class CreateAnalysisDto {
   @Type(() => AudioDto)
   @IsNotEmptyObject()
   audio: AudioDto;
-
-  // Don't forget to use the class-validator decorators in the DTO properties.
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Between } from 'typeorm';
 import { AnalysisEntity } from '../entities/analysis.entity';
 import { NullableType } from '../../../../../utils/types/nullable.type';
 import { Analysis } from '../../../../domain/analysis';
@@ -31,6 +31,40 @@ export class AnalysisRelationalRepository implements AnalysisRepository {
     const entities = await this.analysisRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+    });
+
+    return entities.map((entity) => AnalysisMapper.toDomain(entity));
+  }
+
+  async findAllHours(): Promise<{ hour: string; count: number }[]> {
+    const all = await this.analysisRepository.find();
+    console.log(all[0].createdAt);
+    const result = await this.analysisRepository.query(`
+      SELECT 
+        DATE_TRUNC('hour', "createdAt") as hour,
+        COUNT(*) as count
+      FROM analysis
+      GROUP BY DATE_TRUNC('hour', "createdAt")
+      ORDER BY DATE_TRUNC('hour', "createdAt") DESC
+    `);
+
+    console.log(result);
+
+    return result;
+  }
+
+  async findAllByHour(hour: string): Promise<Analysis[]> {
+    const from = new Date(hour);
+    const to = new Date(hour);
+    to.setHours(to.getHours() + 1);
+
+    const entities = await this.analysisRepository.find({
+      where: {
+        createdAt: Between(from, to),
+      },
+      order: {
+        createdAt: 'ASC',
+      },
     });
 
     return entities.map((entity) => AnalysisMapper.toDomain(entity));

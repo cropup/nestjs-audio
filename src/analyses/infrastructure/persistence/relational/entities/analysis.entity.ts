@@ -1,7 +1,5 @@
 import { TranscriptEntity } from '../../../../../transcripts/infrastructure/persistence/relational/entities/transcript.entity';
-
 import { AudioEntity } from '../../../../../audios/infrastructure/persistence/relational/entities/audio.entity';
-
 import {
   CreateDateColumn,
   Entity,
@@ -11,6 +9,7 @@ import {
   Column,
 } from 'typeorm';
 import { EntityRelationalHelper } from '../../../../../utils/relational-entity-helper';
+import { AnalysisError } from '../../../../../analyses/domain/analysis-error';
 
 @Entity({
   name: 'analysis',
@@ -18,9 +17,9 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
 export class AnalysisEntity extends EntityRelationalHelper {
   @Column({
     nullable: true,
-    type: String,
+    type: 'jsonb',
   })
-  errors?: string | null;
+  errors?: AnalysisError[] | null;
 
   @Column({
     nullable: true,

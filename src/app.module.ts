@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UsersModule } from './users/users.module';
 import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
@@ -20,6 +21,10 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { AllConfigType } from './config/config.type';
 import { SessionModule } from './session/session.module';
 import { MailerModule } from './mailer/mailer.module';
+import { AudiosModule } from './audios/audios.module';
+import { TranscriptsModule } from './transcripts/transcripts.module';
+import { AnalysesModule } from './analyses/analyses.module';
+import { AiModule } from './ai/ai.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -28,17 +33,10 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   },
 });
 
-import { AudiosModule } from './audios/audios.module';
-
-import { TranscriptsModule } from './transcripts/transcripts.module';
-
-import { AnalysesModule } from './analyses/analyses.module';
-
 @Module({
   imports: [
     AnalysesModule,
     TranscriptsModule,
-    AudiosModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [
@@ -51,6 +49,7 @@ import { AnalysesModule } from './analyses/analyses.module';
       ],
       envFilePath: ['.env'],
     }),
+    EventEmitterModule.forRoot(),
     infrastructureDatabaseModule,
     I18nModule.forRootAsync({
       useFactory: (configService: ConfigService<AllConfigType>) => ({
@@ -83,6 +82,8 @@ import { AnalysesModule } from './analyses/analyses.module';
     MailModule,
     MailerModule,
     HomeModule,
+    AudiosModule,
+    AiModule,
   ],
 })
 export class AppModule {}

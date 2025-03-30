@@ -12,11 +12,15 @@ import { UpdateTranscriptDto } from './dto/update-transcript.dto';
 import { TranscriptRepository } from './infrastructure/persistence/transcript.repository';
 import { IPaginationOptions } from '../utils/types/pagination-options';
 import { Transcript } from './domain/transcript';
+import { FilesLocalService } from '../files/infrastructure/uploader/local/files.service';
+import { GeminiService } from '../ai/gemini.service';
 
 @Injectable()
 export class TranscriptsService {
   constructor(
     private readonly audioService: AudiosService,
+    private readonly fileService: FilesLocalService,
+    private readonly geminiService: GeminiService,
 
     // Dependencies here
     private readonly transcriptRepository: TranscriptRepository,
@@ -47,6 +51,28 @@ export class TranscriptsService {
       audio,
 
       text: createTranscriptDto.text,
+    });
+  }
+
+  async createForAudio(audioId: Audio['id']) {
+    const audio = await this.audioService.findById(audioId);
+    if (!audio) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: { audio: 'notExists' },
+      });
+    }
+
+    const audioPart = await this.fileService.getAudioFileAsBase64(
+      audio.file.id,
+    );
+
+    const transcript = await this.geminiService.transcribeAudio(audioPart);
+
+    return this.create({
+      audio: { id: audioId },
+      text: transcript,
+      provider: 'gemini',
     });
   }
 

@@ -15,16 +15,19 @@ import { UpdateAnalysisDto } from './dto/update-analysis.dto';
 import { AnalysisRepository } from './infrastructure/persistence/analysis.repository';
 import { IPaginationOptions } from '../utils/types/pagination-options';
 import { Analysis } from './domain/analysis';
+import { OnEvent } from '@nestjs/event-emitter';
+import { AudioCreatedEvent } from '../audios/events/audio-created.event';
+import { FilesLocalService } from '../files/infrastructure/uploader/local/files.service';
+import { GeminiService } from '../ai/gemini.service';
 
 @Injectable()
 export class AnalysesService {
   constructor(
     private readonly transcriptService: TranscriptsService,
-
     private readonly audioService: AudiosService,
-
-    // Dependencies here
     private readonly analysisRepository: AnalysisRepository,
+    private readonly fileService: FilesLocalService,
+    private readonly geminiService: GeminiService,
   ) {}
 
   async create(createAnalysisDto: CreateAnalysisDto) {
@@ -76,6 +79,37 @@ export class AnalysesService {
     });
   }
 
+  @OnEvent('audio.created')
+  async handleAudioCreatedEvent(payload: AudioCreatedEvent) {
+    const audioPart = await this.fileService.getAudioFileAsBase64(
+      payload.fileId,
+    );
+
+    const errors = await this.geminiService.analyzeAudio(audioPart);
+    if (!errors) {
+      return;
+    } else if (!errors.length) {
+      console.log('🔵 No errors found. AudioId:', payload.audioId);
+    }
+
+    const analysis = await this.create({
+      errors,
+      audio: { id: payload.audioId },
+    });
+
+    await this.createTranscriptToAnalysis(analysis);
+  }
+
+  async createTranscriptToAnalysis(analysis: Analysis) {
+    const transcript = await this.transcriptService.createForAudio(
+      analysis.audio.id,
+    );
+
+    await this.analysisRepository.update(analysis.id, {
+      transcript: { id: transcript.id },
+    });
+  }
+
   findAllWithPagination({
     paginationOptions,
   }: {
@@ -87,6 +121,14 @@ export class AnalysesService {
         limit: paginationOptions.limit,
       },
     });
+  }
+
+  findAllHours(): Promise<{ hour: string; count: number }[]> {
+    return this.analysisRepository.findAllHours();
+  }
+
+  findAllByHour(hour: string): Promise<Analysis[]> {
+    return this.analysisRepository.findAllByHour(hour);
   }
 
   findById(id: Analysis['id']) {

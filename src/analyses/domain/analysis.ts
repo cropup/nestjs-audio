@@ -1,13 +1,14 @@
 import { Transcript } from '../../transcripts/domain/transcript';
 import { Audio } from '../../audios/domain/audio';
 import { ApiProperty } from '@nestjs/swagger';
+import { AnalysisError } from './analysis-error';
 
 export class Analysis {
   @ApiProperty({
-    type: () => String,
+    type: () => [AnalysisError],
     nullable: true,
   })
-  errors?: string | null;
+  errors?: AnalysisError[] | null;
 
   @ApiProperty({
     type: () => String,
