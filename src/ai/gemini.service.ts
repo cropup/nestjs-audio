@@ -99,7 +99,7 @@ export class GeminiService {
     data: string;
     mimeType: string;
   }): Promise<string> {
-    const prompt = `This is a recording of a student speaking during an English class. Please transcribe exactly what is said. If nothing is said, leave it blank. The output should be a plain text transcript, reflecting the student's original speech as closely as possible.`;
+    const prompt = `This is a recording of a student speaking during an English class. Please transcribe exactly what is said. The output should be a plain text transcript, reflecting the student's original speech as closely as possible. If the audio contains no speech or is completely silent, you must return just "No speech detected".`;
     const audio = { inlineData };
 
     const request: GenerateContentRequest = {
