@@ -23,6 +23,7 @@ import {
   ApiOkResponse,
   ApiParam,
   ApiTags,
+  ApiHeader,
 } from '@nestjs/swagger';
 import { Audio } from './domain/audio';
 import { AuthGuard } from '@nestjs/passport';
@@ -33,10 +34,9 @@ import {
 import { infinityPagination } from '../utils/infinity-pagination';
 import { FindAllAudiosDto } from './dto/find-all-audios.dto';
 import { AudioCreatedEvent } from './events/audio-created.event';
+import { ApiKeyGuard } from '../auth/guards/api-key.guard';
 
 @ApiTags('Audios')
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
 @Controller({
   path: 'audios',
   version: '1',
@@ -50,6 +50,11 @@ export class AudiosController {
   @Post()
   @ApiCreatedResponse({ type: Audio })
   @ApiConsumes('multipart/form-data')
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API key for authentication',
+    required: true,
+  })
   @ApiBody({
     schema: {
       type: 'object',
@@ -58,6 +63,7 @@ export class AudiosController {
       },
     },
   })
+  @UseGuards(ApiKeyGuard)
   @UseInterceptors(FileInterceptor('file'))
   async create(@UploadedFile() file: Express.Multer.File) {
     const uploadedFile = await this.audiosService.create(file);
@@ -74,6 +80,8 @@ export class AudiosController {
   }
 
   @Get()
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({
     type: InfinityPaginationResponse(Audio),
   })
@@ -98,6 +106,8 @@ export class AudiosController {
   }
 
   @Get(':id')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiParam({
     name: 'id',
     type: String,
@@ -111,6 +121,8 @@ export class AudiosController {
   }
 
   @Patch(':id')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiParam({
     name: 'id',
     type: String,
@@ -124,6 +136,8 @@ export class AudiosController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiParam({
     name: 'id',
     type: String,
