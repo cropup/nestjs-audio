@@ -65,9 +65,11 @@ export class FilesLocalService {
 
     const file = await fsPromise.readFile(fullPath);
 
+    const mimeType = filename.endsWith('.mp3') ? 'audio/mpeg' : 'audio/webm';
+
     return {
+      mimeType,
       data: file.toString('base64'),
-      mimeType: 'audio/mpeg',
     };
   }
 }

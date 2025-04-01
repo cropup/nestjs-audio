@@ -8,7 +8,7 @@ export const createAudioMulterConfig = (
   configService: ConfigService<AllConfigType>,
 ) => ({
   fileFilter: (request, file, callback) => {
-    if (!file.originalname.match(/\.(mp3)$/i)) {
+    if (!file.originalname.match(/\.(mp3|webm)$/i)) {
       return callback(
         new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,

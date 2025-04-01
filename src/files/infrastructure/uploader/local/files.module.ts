@@ -24,7 +24,7 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule;
       useFactory: (configService: ConfigService<AllConfigType>) => {
         return {
           fileFilter: (request, file, callback) => {
-            if (!file.originalname.match(/\.(jpe?g|png|gif|mp3)$/i)) {
+            if (!file.originalname.match(/\.(jpe?g|png|gif|mp3|webm)$/i)) {
               return callback(
                 new UnprocessableEntityException({
                   status: HttpStatus.UNPROCESSABLE_ENTITY,
