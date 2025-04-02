@@ -18,7 +18,7 @@ import { Analysis } from './domain/analysis';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AudioCreatedEvent } from '../audios/events/audio-created.event';
 import { FilesLocalService } from '../files/infrastructure/uploader/local/files.service';
-import { GeminiService } from '../ai/gemini.service';
+import { OpenAiService } from '../ai/openai.service';
 
 @Injectable()
 export class AnalysesService {
@@ -27,7 +27,7 @@ export class AnalysesService {
     private readonly audioService: AudiosService,
     private readonly analysisRepository: AnalysisRepository,
     private readonly fileService: FilesLocalService,
-    private readonly geminiService: GeminiService,
+    private readonly openaiService: OpenAiService,
   ) {}
 
   async create(createAnalysisDto: CreateAnalysisDto) {
@@ -81,32 +81,33 @@ export class AnalysesService {
 
   @OnEvent('audio.created')
   async handleAudioCreatedEvent(payload: AudioCreatedEvent) {
-    const audioPart = await this.fileService.getAudioFileAsBase64(
+    const audioFilePath = await this.fileService.getAudioFilePath(
       payload.fileId,
     );
+    const transcription =
+      await this.openaiService.transcribeAudio(audioFilePath);
 
-    const errors = await this.geminiService.analyzeAudio(audioPart);
+    const savedTranscript = await this.transcriptService.create({
+      audio: { id: payload.audioId },
+      text: transcription,
+      provider: 'openai',
+    });
+
+    if (transcription.length <= 10) {
+      return console.log('Too short to analyze:', transcription);
+    }
+
+    const errors = await this.openaiService.analyzeTranscript(transcription);
     if (!errors) {
       return;
     } else if (!errors.length) {
       console.log('🔵 No errors found. AudioId:', payload.audioId);
     }
 
-    const analysis = await this.create({
+    await this.create({
       errors,
       audio: { id: payload.audioId },
-    });
-
-    await this.createTranscriptToAnalysis(analysis);
-  }
-
-  async createTranscriptToAnalysis(analysis: Analysis) {
-    const transcript = await this.transcriptService.createForAudio(
-      analysis.audio.id,
-    );
-
-    await this.analysisRepository.update(analysis.id, {
-      transcript: { id: transcript.id },
+      transcript: { id: savedTranscript.id },
     });
   }
 

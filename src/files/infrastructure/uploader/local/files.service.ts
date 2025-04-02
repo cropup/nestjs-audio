@@ -72,4 +72,22 @@ export class FilesLocalService {
       data: file.toString('base64'),
     };
   }
+
+  async getAudioFilePath(fileId: string): Promise<string> {
+    const fileDto = await this.fileRepository.findById(fileId);
+
+    if (!fileDto) {
+      throw new NotFoundException('File not found');
+    }
+
+    const filename = fileDto?.path.split('/').pop();
+    if (!filename) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: { file: 'selectFile' },
+      });
+    }
+
+    return path.join('./files/audios', filename);
+  }
 }
