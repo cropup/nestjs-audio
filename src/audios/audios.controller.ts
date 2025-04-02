@@ -10,6 +10,7 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  Header,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -48,6 +49,7 @@ export class AudiosController {
   ) {}
 
   @Post()
+  @Header('Access-Control-Allow-Origin', '*')
   @ApiCreatedResponse({ type: Audio })
   @ApiConsumes('multipart/form-data')
   @ApiHeader({
