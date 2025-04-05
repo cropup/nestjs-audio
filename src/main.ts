@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   ValidationPipe,
   VersioningType,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
@@ -12,6 +13,7 @@ import { AppModule } from './app.module';
 import validationOptions from './utils/validation-options';
 import { AllConfigType } from './config/config.type';
 import { ResolvePromisesInterceptor } from './utils/serializer.interceptor';
+import morgan from 'morgan';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -34,6 +36,18 @@ async function bootstrap() {
     // https://github.com/typestack/class-transformer/issues/549
     new ResolvePromisesInterceptor(),
     new ClassSerializerInterceptor(app.get(Reflector)),
+  );
+
+  const logger = new Logger('HTTP');
+  app.use(
+    morgan(
+      ':remote-addr :remote-user ":method :url :http-version" :status :res[content-length] ":referrer" ":user-agent"',
+      {
+        stream: {
+          write: (message) => logger.log(message.trim()),
+        },
+      },
+    ),
   );
 
   const options = new DocumentBuilder()
